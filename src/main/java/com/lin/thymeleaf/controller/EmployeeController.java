@@ -1,43 +1,52 @@
 package com.lin.thymeleaf.controller;
 
-import com.lin.thymeleaf.model.Employee;
+import com.lin.thymeleaf.entity.Employee;
+import com.lin.thymeleaf.service.EmployeeService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-
-import javax.annotation.PostConstruct;
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
+
 
 @Controller
 @RequestMapping("/employees")
 public class EmployeeController {
 
-    private List<Employee> theEmployees;
+    private EmployeeService employeeService;
 
-    @PostConstruct
-    private void loadData() {
-        // create employees
-        Employee employee1 = new Employee(1, "leslie", "Andrews", "leslie@gmail.com");
-        Employee employee2 = new Employee(2, "Emma", "Bea", "Emma@gmail.com");
-        Employee employee3 = new Employee(3, "Avani", "Gee", "Avani@gmail.com");
-
-        // create the list
-        theEmployees = new ArrayList<>();
-
-        // add to the list
-        theEmployees.add(employee1);
-        theEmployees.add(employee2);
-        theEmployees.add(employee3);
-
+    @Autowired
+    public EmployeeController(EmployeeService employeeService) {
+        this.employeeService = employeeService;
     }
 
-    @GetMapping("/get")
+    @GetMapping("/list")
     public String sayHello(Model theModel) {
+
+        List<Employee> theEmployees = employeeService.findAll();
+
         theModel.addAttribute("theEmployees", theEmployees);
 
-        return "view/list-employee";
+        return "view/list-employees";
+    }
+
+    @GetMapping("/showFormForAdd")
+    public String showFormForAdd(Model theModel) {
+
+        Employee theEmployee = new Employee();
+
+        theModel.addAttribute("employee", theEmployee);
+
+        return "employee/employee-form";
+    }
+
+    @PostMapping("/save")
+    public String saveEmployee(@ModelAttribute("employee") Employee employee) {
+        employeeService.save(employee);
+
+        return "redirect:/employees/list";
     }
 }
